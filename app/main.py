@@ -1,9 +1,12 @@
 from fastapi import FastAPI, responses
 from fastapi.middleware.cors import CORSMiddleware
+from app import models
+
+from app.database import Base, engine
 
 app = FastAPI()
 
-origins = ["*"]
+origins = [""]
 
 app.add_middleware(
     CORSMiddleware,
