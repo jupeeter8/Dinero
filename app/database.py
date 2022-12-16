@@ -11,13 +11,13 @@ DATABASE_URL = new_url
 
 engine = create_engine(DATABASE_URL)
 
-SessionLocal = sessionmaker(autocommit=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, bind=engine, autoflush=False)
 
 Base = declarative_base()
 
 
 def get_db():
-    db = SessionLocal
+    db = SessionLocal()
     try:
         yield db
     finally:

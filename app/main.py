@@ -1,10 +1,12 @@
 from fastapi import FastAPI, responses
 from fastapi.middleware.cors import CORSMiddleware
-from app import models
 
-from app.database import Base, engine
+from app import models
+from .routers import users
+from .database import engine
 
 app = FastAPI()
+app.include_router(users.router)
 
 origins = [""]
 
