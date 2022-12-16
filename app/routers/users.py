@@ -5,12 +5,12 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from ..schema import CreateNewUser
 from .. import models
-from ..oAuth2 import password_utils
+from ..oAuth2 import get_current_user, password_utils
 
 router = APIRouter(tags=["User"])
 
 
-@router.post("/create/user", status_code=status.HTTP_201_CREATED)
+@router.post("/user/create", status_code=status.HTTP_201_CREATED)
 async def create_new_user(new_user_data: CreateNewUser, db: Session = Depends(get_db)):
     customer_query = db.query(models.Users).filter(
         models.Users.username == new_user_data.username
