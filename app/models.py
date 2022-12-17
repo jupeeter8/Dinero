@@ -1,4 +1,4 @@
-from sqlalchemy import TIMESTAMP, Column, Integer, String, ForeignKey
+from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, ForeignKey
 from sqlalchemy.sql.expression import text
 
 from .database import Base
@@ -33,5 +33,26 @@ class Friends(Base):
     )
     relation = Column(String, nullable=False)
     friends_since = Column(
+        TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
+    )
+
+
+class FriendRequests(Base):
+    __tablename__ = "friend_request"
+
+    sender = Column(
+        Integer,
+        ForeignKey("users.user_id", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    )
+    reciver = Column(
+        Integer,
+        ForeignKey("users.user_id", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    )
+    status = Column(Boolean, nullable=False, server_default="false")
+    sent_on = Column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
