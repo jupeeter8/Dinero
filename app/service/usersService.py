@@ -15,5 +15,8 @@ class UserValidator:
         validation_data = validation_query.first()
 
         if not validation_data:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with user_ID: {self.tovalidate_user_ID} does not exist",
+            )
         return True

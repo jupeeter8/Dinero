@@ -47,7 +47,11 @@ def verify_token_data(token: str):
         return user_ID
 
     except JWTError:
-        raise Exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 async def get_current_user(

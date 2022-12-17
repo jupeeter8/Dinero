@@ -40,30 +40,3 @@ async def create_new_user(new_user_data: CreateNewUser, db: Session = Depends(ge
     db.refresh(data)
 
     return data
-
-
-@router.post("/user/addfriend", status_code=status.HTTP_201_CREATED)
-async def invite_friend(
-    current_user_ID: int = Depends(get_current_user),
-    friend_ID: int = None,
-    db: Session = Depends(get_db),
-):
-    if current_user_ID == friend_ID:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User can not add themselv as a friend",
-        )
-
-    vu_ID = UserValidator(friend_ID)
-    if vu_ID.validate_user(db):
-        friend_model_data = {
-            "user_a": current_user_ID,
-            "user_b": friend_ID,
-            "relation": "Invitation",
-        }
-
-        friend = models.Friends(**friend_model_data)
-        db.add(friend)
-        db.commit()
-        db.refresh(friend)
-        return friend
