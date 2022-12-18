@@ -36,7 +36,7 @@ async def add_friend(
     if check_integriy:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User had alredy sent a friend request",
+            detail=f"User alredy has a pending request from user {friend_ID}",
         )
 
     if vu_ID.validate_user(db):
@@ -56,5 +56,5 @@ async def add_friend(
         except sqlalchemy.exc.IntegrityError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User had alredy sent a friend request",
+                detail=f"User {current_user_ID} has alredy sent a friend request to user with userID: {friend_ID}",
             )
