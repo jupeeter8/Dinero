@@ -56,3 +56,15 @@ class FriendRequests(Base):
     sent_on = Column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
+
+
+class SplitRecord(Base):
+    __tablename__ = "split_record"
+
+    split_id = Column(Integer, primary_key=True, nullable=False)
+
+    paid_by = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    paid_amount = Column(Integer, nullable=False)
+
+    owed_by = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    owed_amount = Column(Integer, nullable=False)
