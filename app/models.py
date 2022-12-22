@@ -19,27 +19,6 @@ class Users(Base):
 class Friends(Base):
     __tablename__ = "friends"
 
-    user_a = Column(
-        Integer,
-        ForeignKey("users.user_id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False,
-    )
-    user_b = Column(
-        Integer,
-        ForeignKey("users.user_id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False,
-    )
-    relation = Column(String, nullable=False)
-    friends_since = Column(
-        TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
-    )
-
-
-class FriendRequests(Base):
-    __tablename__ = "friend_request"
-
     sender = Column(
         Integer,
         ForeignKey("users.user_id", ondelete="CASCADE"),
@@ -52,19 +31,17 @@ class FriendRequests(Base):
         primary_key=True,
         nullable=False,
     )
+
     status = Column(Boolean, nullable=False, server_default="false")
+
     sent_on = Column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
 
+    invite_code = Column(Integer, nullable=False)
 
-class SplitRecord(Base):
-    __tablename__ = "split_record"
+    relation = Column(String, nullable=False)
 
-    split_id = Column(Integer, primary_key=True, nullable=False)
-
-    paid_by = Column(Integer, ForeignKey("users.user_id"), nullable=False)
-    paid_amount = Column(Integer, nullable=False)
-
-    owed_by = Column(Integer, ForeignKey("users.user_id"), nullable=False)
-    owed_amount = Column(Integer, nullable=False)
+    friends_since = Column(
+        TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
+    )
