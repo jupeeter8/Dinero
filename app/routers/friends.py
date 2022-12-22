@@ -16,19 +16,46 @@ async def add_friend(
     friend_ID: int = None,
     db: Session = Depends(get_db),
 ):
-    if current_user_ID == friend_ID:
+
+    if current_user_ID == friend_ID:  # Check User is not adding themselve as a friend
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"User can not add themselv as a friend",
         )
 
     vu_ID = UserValidator(friend_ID)
+    if vu_ID.validate_user(db):  # Check if freind is a valid user
+        pass
 
+    # Check if firend has alredy sent a friend request
     check_integriy = (
-        db.query(models.FriendRequests)
+        db.query(models.Friends)
         .filter(
-            models.FriendRequests.sender == friend_ID,
-            models.FriendRequests.reciver == current_user_ID,
+            models.Friends.sender == friend_ID,
+            models.Friends.reciver == current_user_ID,
+        )
+        .first()
+    )
+
+    if check_integriy:
+
+        if not check_integriy.status:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User alredy has a pending request from user {friend_ID}",
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User are alredy friends. status: {check_integriy.status}",
+        )
+
+    # Check if user has alredy sent a firend request
+    check_integriy = (
+        db.query(models.Friends)
+        .filter(
+            models.Friends.sender == current_user_ID,
+            models.Friends.reciver == friend_ID,
         )
         .first()
     )
@@ -37,33 +64,33 @@ async def add_friend(
         if not check_integriy.status:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User alredy has a pending request from user {friend_ID}",
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User are alredy friends. status: {check_integriy}",
+                detail=f"User has already sent a request to user {friend_ID}",
             )
 
-    if vu_ID.validate_user(db):
-        add_friend_data = {
-            "sender": current_user_ID,
-            "reciver": friend_ID,
-        }
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User are alredy friends. status: {check_integriy.status}",
+        )
 
-        friend_request = models.FriendRequests(**add_friend_data)
+    add_friend_data = {
+        "sender": current_user_ID,
+        "reciver": friend_ID,
+        "invite_code": 1234,
+        "relation": "Friends",
+    }
 
-        try:
-            db.add(friend_request)
-            db.commit()
-            db.refresh(friend_request)
-            return friend_request
+    friend_data = models.Friends(**add_friend_data)
 
-        except sqlalchemy.exc.IntegrityError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User {current_user_ID} has alredy sent a friend request to user with userID: {friend_ID}",
-            )
+    db.add(friend_data)
+    db.commit()
+    db.refresh(friend_data)
+    return friend_data
+
+    #     except sqlalchemy.exc.IntegrityError:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_400_BAD_REQUEST,
+    #             detail=f"User {current_user_ID} has alredy sent a friend request to user with userID: {friend_ID}",
+    #         )
 
 
 @router.get("/friend/getall_request", status_code=status.HTTP_200_OK)
@@ -71,14 +98,14 @@ async def get_all_requests(
     current_user_ID: int = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     friend_req_query = (
-        db.query(models.FriendRequests)
-        .filter(models.FriendRequests.reciver == current_user_ID)
-        .all()
+        db.query(models.Friends).filter(models.Friends.reciver == current_user_ID).all()
     )
 
     return friend_req_query
 
 
+# Todo generate a invite code and use that to add firend
+# Maybe i don't need invite code
 @router.post("/friend/acceptrequest", status_code=status.HTTP_201_CREATED)
 async def accept_friend_request(
     current_user_ID: int = Depends(get_current_user),
@@ -87,26 +114,29 @@ async def accept_friend_request(
 ):
     is_vs = UserValidator(sender)
     if is_vs.validate_user(db):
-        friend_req_data: models.FriendRequests = (
-            db.query(models.FriendRequests)
-            .filter(
-                models.FriendRequests.sender == sender,
-                models.FriendRequests.reciver == current_user_ID,
-            )
-            .first()
+        pass
+
+    friend_data: models.Friends = (
+        db.query(models.Friends)
+        .filter(
+            models.Friends.sender == sender,
+            models.Friends.reciver == current_user_ID,
         )
-    if not friend_req_data:
+        .first()
+    )
+    if not friend_data:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"User {current_user_ID} does not have a firend request from user {sender}",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User does not have a friend request from user: {sender}",
         )
-    if friend_req_data.status:
-        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
 
-    friend = models.Friends(user_a=sender, user_b=current_user_ID, relation="Friends")
-    db.add(friend)
-    friend_req_data.status = True
+    if friend_data.status:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Users are alredy firends"
+        )
+
+    friend_data.status = True
     db.commit()
-    db.refresh(friend)
+    db.refresh(friend_data)
 
-    return friend
+    return friend_data
