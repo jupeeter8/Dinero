@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status, responses
 from sqlalchemy.orm import Session
 from app import models
 from app.database import get_db
-import sqlalchemy
 from app.oAuth2 import get_current_user
+from app.schema import GetAllFriendRequest
+from app.service.friendsService import generate_code
 from app.service.usersService import UserValidator
 
 
@@ -40,6 +42,11 @@ async def add_friend(
     if check_integriy:
 
         if not check_integriy.status:
+            # response = responses.RedirectResponse(
+            #     url=router.url_path_for(name="accept_friend_request")
+            #     + f"?sender={friend_ID}"
+            # )
+            # return response
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"User alredy has a pending request from user {friend_ID}",
@@ -75,9 +82,10 @@ async def add_friend(
     add_friend_data = {
         "sender": current_user_ID,
         "reciver": friend_ID,
-        "invite_code": 1234,
+        "invite_code": generate_code(),  # Generating invite code to accept friend request
         "relation": "Friends",
     }
+    # Maybe I don't need an invite code
 
     friend_data = models.Friends(**add_friend_data)
 
@@ -86,27 +94,31 @@ async def add_friend(
     db.refresh(friend_data)
     return friend_data
 
-    #     except sqlalchemy.exc.IntegrityError:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_400_BAD_REQUEST,
-    #             detail=f"User {current_user_ID} has alredy sent a friend request to user with userID: {friend_ID}",
-    #         )
 
-
-@router.get("/friend/getall_request", status_code=status.HTTP_200_OK)
+@router.get(
+    "/friend/getall_request",
+    status_code=status.HTTP_200_OK,
+    response_model=List[GetAllFriendRequest],
+)
 async def get_all_requests(
     current_user_ID: int = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     friend_req_query = (
-        db.query(models.Friends).filter(models.Friends.reciver == current_user_ID).all()
+        db.query(models.Friends)
+        .filter(
+            models.Friends.reciver == current_user_ID, models.Friends.status == False
+        )
+        .all()
     )
 
     return friend_req_query
 
 
-# Todo generate a invite code and use that to add firend
-# Maybe i don't need invite code
-@router.post("/friend/acceptrequest", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/friend/acceptrequest",
+    status_code=status.HTTP_201_CREATED,
+    response_model=GetAllFriendRequest,
+)
 async def accept_friend_request(
     current_user_ID: int = Depends(get_current_user),
     db: Session = Depends(get_db),

@@ -22,3 +22,13 @@ class InviteFriend(BaseModel):
     user_a: int
     user_b: int
     relation: str
+
+
+class GetAllFriendRequest(BaseModel):
+    sender: int
+    reciver: int
+    status: bool
+    sent_on: datetime
+
+    class Config:
+        orm_mode = True
