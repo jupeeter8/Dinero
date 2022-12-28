@@ -12,7 +12,11 @@ router = APIRouter(tags=["Balance and settle"])
 @router.post("/record/split")
 async def split(
     split_detail: SplitDetails,
-    current_user_ID: int = Depends(get_current_user),
+    # current_user_ID: int = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return split_detail
+    split_data = models.Split(**split_detail.dict())
+    db.add(split_data)
+    db.commit()
+    db.refresh(split_data)
+    return split_data
