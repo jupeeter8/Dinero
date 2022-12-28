@@ -34,3 +34,13 @@ class SplitDetails(BaseModel):
     reason: str
     category: str
     split_method: dict
+
+
+class GetAllFriendRequest(BaseModel):
+    sender: int
+    reciver: int
+    status: bool
+    sent_on: datetime
+
+    class Config:
+        orm_mode = True
