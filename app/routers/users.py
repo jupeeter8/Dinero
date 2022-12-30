@@ -3,7 +3,6 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.service.usersService import UserValidator
 from ..schema import CreateNewUser, UserDataResponse, InviteFriend
 from .. import models
 from ..oAuth2 import get_current_user, password_utils

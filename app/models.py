@@ -65,3 +65,4 @@ class Split(Base):
     paid_for = Column(String, nullable=True)
     category = Column(String, nullable=False)
     split_method = Column(JSON, nullable=False)
+    created_by = Column(JSON, nullable=False)
