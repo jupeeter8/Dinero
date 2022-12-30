@@ -7,13 +7,14 @@ from app import models
 from app.database import get_db
 from app.schema import UserDataResponse
 
-from .routers import users, auth, friends
+from .routers import split, users, auth, friends
 
 
 app = FastAPI()
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(friends.router)
+app.include_router(split.router)
 
 origins = [""]
 

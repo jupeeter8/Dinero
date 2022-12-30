@@ -6,7 +6,7 @@ from app.database import get_db
 from app.oAuth2 import get_current_user
 from app.schema import GetAllFriendRequest
 from app.service.friendsService import generate_code
-from app.service.usersService import UserValidator
+from app.service.usersService import validate_user
 
 
 router = APIRouter(tags=["Friends"])
@@ -25,8 +25,7 @@ async def add_friend(
             detail=f"User can not add themselv as a friend",
         )
 
-    vu_ID = UserValidator(friend_ID)
-    if vu_ID.validate_user(db):  # Check if freind is a valid user
+    if validate_user(friend_ID, db):  # Check if freind is a valid user
         pass
 
     # Check if firend has alredy sent a friend request
@@ -124,8 +123,7 @@ async def accept_friend_request(
     db: Session = Depends(get_db),
     sender: int = None,
 ):
-    is_vs = UserValidator(sender)
-    if is_vs.validate_user(db):
+    if validate_user(sender, db):
         pass
 
     friend_data: models.Friends = (

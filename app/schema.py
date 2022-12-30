@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
@@ -22,6 +23,19 @@ class InviteFriend(BaseModel):
     user_a: int
     user_b: int
     relation: str
+
+
+class SplitDetails(BaseModel):
+    paid_by: int
+    p_username: str
+    paid_amount: float
+    owed_by: int
+    o_username: str
+    owed_amount: float
+    group_id: Optional[int]
+    paid_for: str
+    category: str
+    split_method: dict
 
 
 class GetAllFriendRequest(BaseModel):
