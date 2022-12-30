@@ -28,10 +28,10 @@ class InviteFriend(BaseModel):
 class SplitDetails(BaseModel):
     paid_by: int
     p_username: str
-    paid_amount: int
+    paid_amount: float
     owed_by: int
     o_username: str
-    owed_amount: int
+    owed_amount: float
     group_id: Optional[int]
     paid_for: str
     category: str

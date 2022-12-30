@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
 from app.schema import SplitDetails
+from app.service.splitService import verify_split
 from app.service.usersService import validate_user
 from .. import models
 from ..database import get_db
@@ -38,4 +39,8 @@ async def split(
     validate_user(split_detail.paid_by, db)
     validate_user(split_detail.owed_by, db)
 
+    # Validate amounts and convert to paise
+    split_detail.paid_amount, split_detail.owed_amount = verify_split(
+        split_detail.paid_amount, split_detail.owed_amount
+    )
     return None
