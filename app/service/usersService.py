@@ -16,3 +16,13 @@ def validate_user(tovalidate_user_ID: int, db: Session) -> bool:
             detail=f"User with user_ID: {tovalidate_user_ID} does not exist",
         )
     return True
+
+
+def get_username(db: Session, *user_ID):
+    username = []
+    for ID in user_ID:
+        name: models.Users = (
+            db.query(models.Users).filter(models.Users.user_id == ID).first()
+        )
+        username.append(name.username)
+    return username
